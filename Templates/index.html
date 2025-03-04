@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Currency Converter</title>
+  </head>
+  <body>
+    <h1>Currency Converter</h1>
+    <form method="POST">
+      <label for="country">Select Base Currency:</label>
+      <select name="country" id="country">
+        {% for country in countryList %}
+        <option value="{{ country }}">{{ country }}</option>
+        {% endfor %}
+      </select>
+      <label for="amt">Enter the amount</label>
+      <input type="number" name="amt" id="amt" />
+      <button type="submit">Get Rates</button>
+    </form>
+
+    {% if rates %}
+    <h2>Exchange Rates:</h2>
+    <ul>
+      {% for currency, rate in rates.items() %}
+      <li>{{ currency }}: {{ rate }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </body>
+</html>
