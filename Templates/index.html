@@ -8,36 +8,44 @@
   </head>
   <body>
     <h1>Currency Converter</h1>
-    <form method="POST">
-      <div>
-        <label for="country">Select Base Currency:</label>
-        <select name="country" id="country" required>
-          <option value="" disabled selected>Select a currency</option>
-          <option value="INR">India (INR)</option>
-          <option value="USD">US (USD)</option>
-          <option value="JPY">Japan (JPY)</option>
-          <option value="GBP">United Kingdom (GBP)</option>
-          <option value="ZAR">South Africa (ZAR)</option>
-        </select>
+
+    <!-- Wrapper to align form and results side by side -->
+    <div class="container">
+      <!-- Currency Converter Form -->
+      <form method="POST">
+        <div>
+          <label for="country">Select Base Currency:</label>
+          <select name="country" id="country" required>
+            <option value="" disabled selected>Select a currency</option>
+            <option value="INR">India (INR)</option>
+            <option value="USD">US (USD)</option>
+            <option value="JPY">Japan (JPY)</option>
+            <option value="GBP">United Kingdom (GBP)</option>
+            <option value="ZAR">South Africa (ZAR)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="amt">Enter the amount:</label>
+          <input type="number" name="amt" id="amt" required min="1" />
+        </div>
+
+        <button type="submit">Get Rates</button>
+      </form>
+
+      <!-- Converted Currency Results -->
+      {% if rates %}
+      <div class="results">
+        <b>Selected Currency: {{ country }}</b>
+        <b>Amount: {{ amount }}</b>
+        <h2>Converted Rates:</h2>
+        <ul>
+          {% for currency, rate in rates.items() %}
+          <li><strong>{{ currency }}:</strong> {{ rate }}</li>
+          {% endfor %}
+        </ul>
       </div>
-
-      <div>
-        <label for="amt">Enter the amount:</label>
-        <input type="number" name="amt" id="amt" required min="1" />
-      </div>
-
-      <button type="submit">Get Rates</button>
-    </form>
-
-    {% if rates %}
-    <b>Selected Currency : {{country}}</b>
-    <b>Amount : {{amount}}</b>
-    <h2>Converted Rates:</h2>
-    <ul>
-      {% for currency, rate in rates.items() %}
-      <li><strong>{{ currency }}:</strong> {{ rate }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
+      {% endif %}
+    </div>
   </body>
 </html>

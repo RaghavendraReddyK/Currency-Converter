@@ -18,12 +18,12 @@ h1 {
   text-align: center;
 }
 
-/* Main Container */
+/* Layout for Form and Results Side by Side */
 .container {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start; /* Aligns form and results at the top */
   justify-content: center;
-  gap: 30px;
+  gap: 30px; /* Adds spacing between form and results */
   width: 80%;
   max-width: 900px;
 }
@@ -80,7 +80,7 @@ button:hover {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  width: 300px;
+  width: 300px; /* Ensures results have a fixed width */
   min-height: 150px;
 }
 
