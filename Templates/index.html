@@ -1,27 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Currency Converter</title>
+    <link rel="stylesheet" href="../static/style.css" />
   </head>
   <body>
     <h1>Currency Converter</h1>
     <form method="POST">
-      <label for="country">Select Base Currency:</label>
-      <select name="country" id="country">
-        {% for country in countryList %}
-        <option value="{{ country }}">{{ country }}</option>
-        {% endfor %}
-      </select>
-      <label for="amt">Enter the amount</label>
-      <input type="number" name="amt" id="amt" />
+      <div>
+        <label for="country">Select Base Currency:</label>
+        <select name="country" id="country" required>
+          <option value="" disabled selected>Select a currency</option>
+          <option value="INR">India (INR)</option>
+          <option value="USD">US (USD)</option>
+          <option value="JPY">Japan (JPY)</option>
+          <option value="GBP">United Kingdom (GBP)</option>
+          <option value="ZAR">South Africa (ZAR)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="amt">Enter the amount:</label>
+        <input type="number" name="amt" id="amt" required min="1" />
+      </div>
+
       <button type="submit">Get Rates</button>
     </form>
 
     {% if rates %}
-    <h2>Exchange Rates:</h2>
+    <b>Selected Currency : {{country}}</b>
+    <b>Amount : {{amount}}</b>
+    <h2>Converted Rates:</h2>
     <ul>
       {% for currency, rate in rates.items() %}
-      <li>{{ currency }}: {{ rate }}</li>
+      <li><strong>{{ currency }}:</strong> {{ rate }}</li>
       {% endfor %}
     </ul>
     {% endif %}

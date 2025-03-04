@@ -4,7 +4,9 @@ import requests
 app = Flask(__name__)
 
 countryList = ['INR', 'USD', 'EUR', 'JPY', 'GBP', 'ZAR']
+
 baseUrl = 'https://api.currencybeacon.com/v1/latest?api_key=xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs'
+
 
 @app.route('/', methods=['GET', 'POST'])
 def apiCall():
@@ -25,10 +27,11 @@ def apiCall():
                 if currency in countryList:
                     filtered_rates[currency] = rate * amount
 
-        return render_template('index.html', rates=filtered_rates, countryList = countryList)
+        return render_template('index.html', rates=filtered_rates, country=country,amount=amount)
 
     else:
-        return render_template('index.html', countryList = countryList)
+        return render_template('index.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
