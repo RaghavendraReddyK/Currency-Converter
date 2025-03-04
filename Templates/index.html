@@ -12,7 +12,7 @@
     <!-- Wrapper to align form and results side by side -->
     <div class="container">
       <!-- Currency Converter Form -->
-      <form method="POST">
+      <form action="/convert" method="POST">
         <div>
           <label for="country">Select Base Currency:</label>
           <select name="country" id="country" required>
@@ -32,20 +32,6 @@
 
         <button type="submit">Get Rates</button>
       </form>
-
-      <!-- Converted Currency Results -->
-      {% if rates %}
-      <div class="results">
-        <b>Selected Currency: {{ country }}</b>
-        <b>Amount: {{ amount }}</b>
-        <h2>Converted Rates:</h2>
-        <ul>
-          {% for currency, rate in rates.items() %}
-          <li><strong>{{ currency }}:</strong> {{ rate }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
     </div>
   </body>
 </html>

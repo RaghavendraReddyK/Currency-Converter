@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Convertion</title>
+    <link rel="stylesheet" href="../static/style.css" />
+  </head>
+  <body>
+    {% if rates %}
+    <div class="results">
+      <b>Selected Currency: {{ country }}</b>
+      <b>Amount: {{ amount }}</b>
+      <h2>Converted Rates:</h2>
+      <ul>
+        {% for currency, rate in rates.items() %}
+        <li><strong>{{ currency }}:</strong> {{ rate }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </body>
+</html>
