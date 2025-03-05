@@ -3,13 +3,13 @@ import requests
 
 app = Flask(__name__)
 
-countryList = ['INR', 'USD', 'EUR', 'JPY', 'GBP', 'ZAR']
+# countryList = ['INR', 'USD', 'EUR', 'JPY', 'GBP', 'ZAR']
 baseUrl = 'https://api.currencybeacon.com/v1/latest?api_key=xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs'
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 
 @app.route('/convert', methods=['POST'])
 def apiCall():
