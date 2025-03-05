@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request,jsonify
 import requests
 
 app = Flask(__name__)
@@ -13,29 +13,25 @@ def index():
 
 @app.route('/convert', methods=['POST'])
 def apiCall():
-    data = None
     filtered_rates = {}
+    data = request.get_json()
+    url = f"{baseUrl}&base={data["base"]}"
+    response = requests.get(url)
+    result = response.json()
 
-    if request.method == 'POST':
-        country = request.form['country']
-        amount = float(request.form['amt'])
-        url = f"{baseUrl}&base={country}"
-
-        response = requests.get(url)
-        print(response)
-        data = response.json()
-        print(data)
-
-        if data and 'rates' in data:
-            rates = data['rates']
+    if result and 'rates' in result:
+            rates = result['rates']
             for currency, rate in rates.items():
-                if currency in countryList:
-                    filtered_rates[currency] = rate * amount
+                if currency in data["target"]:
+                    filtered_rates[currency] = rate * data["amt"]
 
-        return render_template('result.html', rates=filtered_rates, country=country,amount=amount)
+    result_json_data = {
+         "base" : data['base'],
+         "amt" : data['amt'],
+         "converted_rates" : filtered_rates
+    }
 
-    else:
-        return render_template('index.html')
+    return jsonify(result_json_data)
 
 if __name__ == "__main__":
     app.run(debug=True)
