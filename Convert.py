@@ -1,10 +1,9 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, render_template, request
 import requests
 
 app = Flask(__name__)
 
 countryList = ['INR', 'USD', 'EUR', 'JPY', 'GBP', 'ZAR']
-
 baseUrl = 'https://api.currencybeacon.com/v1/latest?api_key=xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs'
 
 
@@ -12,7 +11,7 @@ baseUrl = 'https://api.currencybeacon.com/v1/latest?api_key=xDJeYfJERFQj9TegI4PK
 def index():
     return render_template('index.html')
 
-@app.route('/convert', methods=['GET', 'POST'])
+@app.route('/convert', methods=['POST'])
 def apiCall():
     data = None
     filtered_rates = {}
@@ -23,7 +22,9 @@ def apiCall():
         url = f"{baseUrl}&base={country}"
 
         response = requests.get(url)
+        print(response)
         data = response.json()
+        print(data)
 
         if data and 'rates' in data:
             rates = data['rates']
@@ -35,7 +36,6 @@ def apiCall():
 
     else:
         return render_template('index.html')
-
 
 if __name__ == "__main__":
     app.run(debug=True)
