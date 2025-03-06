@@ -29,17 +29,17 @@ def apiCall():
     convertedRates = {}
     KeysNotPresent = {}
 
-    #Getting All the keys from Redis 
+    #Getting All the keys from Redis, Keys will be of type byte
     redisKeys = redis_connection.keys()
-
 
     # if data is available in Redis chache
     for target in target:
         tempKey = data['base']+"-"+target
-        if tempKey in redisKeys:
+        if tempKey.encode() in redisKeys:
             convertedRates[target] = float(redis_connection.get(tempKey)) * amt
         else:
             KeysNotPresent[target] = tempKey
+            print(tempKey)
 
     # if data not available in Redis Chache
     if(len(KeysNotPresent) != 0):
@@ -51,7 +51,7 @@ def apiCall():
             for currency, rate in rates.items():
                 if currency in KeysNotPresent:
                     convertedRates[currency] = rate * amt
-                    
+
                     #Setting new redis Key with 10 min expiry
                     redis_connection.setex(KeysNotPresent[currency], 600, rate)
 
