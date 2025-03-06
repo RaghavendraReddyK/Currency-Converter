@@ -6,50 +6,62 @@ app = Flask(__name__)
 
 baseUrl = 'https://api.currencybeacon.com/v1/latest?api_key=xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs'
 
-REDIS_HOST = 'redis-10810.c301.ap-south-1-1.ec2.redns.redis-cloud.com'
-REDIS_PORT = 10810
-REDIS_PASSWORD = 'iN2QcXeOwGBWd2igV9k3eNaNZy7q2uYq'
+RedisHost = 'redis-10810.c301.ap-south-1-1.ec2.redns.redis-cloud.com'
+RedisPort = 10810
+RedisPassword = 'iN2QcXeOwGBWd2igV9k3eNaNZy7q2uYq'
 
 
 redis_connection = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASSWORD,
+    host=RedisHost,
+    port=RedisPort,
+    password=RedisPassword,
     db=0,
-    decode_responses=True
 )
-# Test connection
-redis_connection.ping()
-
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
 
 @app.route('/convert', methods=['POST'])
 def apiCall():
 
-    filtered_rates = {}
     data = request.get_json()
-    url = f"{baseUrl}&base={data["base"]}"
-    response = requests.get(url)
-    result = response.json()
-    amt = float(data["amt"])
+    amt = float(data['amt'])
+    target = data['target']
+    baseCurrency = data['base']
 
-    if result and 'rates' in result:
+    convertedRates = {}
+    KeysNotPresent = {}
+
+    #Getting All the keys from Redis 
+    redisKeys = redis_connection.keys()
+
+
+    # if data is available in Redis chache
+    for target in target:
+        tempKey = data['base']+"-"+target
+        if tempKey in redisKeys:
+            convertedRates[target] = float(redis_connection.get(tempKey)) * amt
+        else:
+            KeysNotPresent[target] = tempKey
+
+    # if data not available in Redis Chache
+    if(len(KeysNotPresent) != 0):
+        url = f"{baseUrl}&base={baseCurrency}"
+        response = requests.get(url)
+        result = response.json()
+        if result and 'rates' in result:
             rates = result['rates']
             for currency, rate in rates.items():
-                if currency in data["target"]:
-                    filtered_rates[currency] = rate * amt
+                if currency in KeysNotPresent:
+                    convertedRates[currency] = rate * amt
+                    
+                    #Setting new redis Key with 10 min expiry
+                    redis_connection.setex(KeysNotPresent[currency], 600, rate)
 
+
+    #formating my response to Json
     result_json_data = {
-         "base" : data['base'],
+         "base" : baseCurrency,
          "amt" : amt,
-         "converted_rates" : filtered_rates
+         "converted_rates" : convertedRates
     }
-
-    redis_connection.setex(data['base'],10, str(filtered_rates))
-    print(redis_connection.ttl(data['base']))
-    print(redis_connection.get(data['base']))
 
     return jsonify(result_json_data)
 
