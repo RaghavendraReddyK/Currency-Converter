@@ -1,9 +1,25 @@
-from flask import Flask, render_template, request,jsonify,json
-from CustomException import ConnectFailed
+import datetime 
+from flask import Flask, render_template, request,jsonify
+import psycopg2
 import requests
 import redis
 
 app = Flask(__name__)
+
+
+BASE_API_URL = "https://api.currencybeacon.com/v1"
+
+# Generic function to make an API call
+def make_api_call(endpoint, params):
+    url = f"{BASE_API_URL}/{endpoint}"
+    api_key = "xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs"
+    params["api_key"] = api_key
+    
+    try:
+        response = requests.get(url, params=params)
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
 
 #function to connect to redis
 def connectToRedis():
@@ -24,14 +40,33 @@ def connectToRedis():
         if redis_connection.ping():
             print("Connected to Redis successfully!")
             return redis_connection
-    except redis.ConnectionError as e:
-        raise ConnectFailed("Redis connection failed !!")
+    except Exception as e:
+        raise Exception("Redis connection failed !!")
+    
 
+#connect to DB
+def connectToDB():
+    
+    DB_host = "dev-common-eksom-vend-db.c3ucia680nmx.af-south-1.rds.amazonaws.com"
+    DB_name = "playground"
+    DB_user = "player"
+    DB_password = "iAMready"
+
+    try:
+        conn = psycopg2.connect(
+            host=DB_host,
+            dbname=DB_name,
+            user=DB_user,
+            password=DB_password,
+            port = 5432
+        )
+        return conn
+    except Exception as e:
+        # print(f"Error: {e}")
+        raise Exception("Db connection Failed")
 
 #function calculate the convertion rate
-def getConvertedRate(baseCurrency,targetCurrency,amt):
-
-    latestRatesURL = 'https://api.currencybeacon.com/v1/latest?api_key=xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs'
+def getExchangeRate(baseCurrency,targetCurrency):
 
     redisConnection = connectToRedis()
 
@@ -41,73 +76,28 @@ def getConvertedRate(baseCurrency,targetCurrency,amt):
 
     if redisConnection.exists(key) == 1:
         ExchangeRate = float(redisConnection.get(key))
-        return amt * ExchangeRate
+        return ExchangeRate
 
     elif redisConnection.exists(inversKey) == 1:
         ExchangeRate = 1/float(redisConnection.get(inversKey))
         redisConnection.setex(key,600,ExchangeRate)
-        return amt * ExchangeRate
+        return ExchangeRate
     else :
-        url = f"{latestRatesURL}&base={baseCurrency}&symbols={targetCurrency}"
 
-        response = requests.get(url)
+        api_params = {
+        "base": baseCurrency,
+        "symbols": targetCurrency,
+        }
 
-        result = response.json()
+        result = make_api_call('latest',api_params)
 
         ExchangeRate = (result['rates'][f'{targetCurrency}'])
 
         redisConnection.setex(key,600,ExchangeRate)
         redisConnection.setex(inversKey,600,1/ExchangeRate)
 
-        return amt * ExchangeRate
-
-#Api End point to get Convertion rate
-@app.route('/convert', methods=['POST'])
-def apiCall(): 
-    data = request.get_json()
-    try :    
-        amt = float(data['amt'])
-        targetCurrency = data['target']
-        baseCurrency = data['base']
-    except :
-        return jsonify("Provide both 'base' and 'target' values "),500
-
-    convertedRate = getConvertedRate(baseCurrency,targetCurrency,amt)
-
-    # formating my response to Json
-    result_json_data = {
-         "base" : baseCurrency,
-         "amt" : amt,
-         "converted_rates" : convertedRate
-    }
-
-    return jsonify(result_json_data)
-
+        return ExchangeRate
     
-@app.route('/rateoftheday', methods = ['GET'])
-def oneRate():
-    baseUrl = 'https://api.currencybeacon.com/v1/timeseries?api_key=xDJeYfJERFQj9TegI4PKmpcWGAQnIHhs'
-    base = request.args.get('base')
-    start_date = request.args.get('start_date')
-    end_date = request.args.get('end_date')
-    symbols = request.args.get('symbols')
-
-    url = f"{baseUrl}&base={base}&start_date={start_date}&end_date={end_date}&symbols={symbols}"
-
-    responses = requests.get(url)
-    result = responses.json()
-    data = result['response']
-    resValues = {}
-
-    # Iterate through the nested dictionary
-    for date, rates in data.items():
-        print("date= "+ date)
-        for currency, value in rates.items():
-            resValues[date] = {currency: value}
-            print("currency = "+currency)
-            print(f"value = {value}")
-
-    return resValues
 
 if __name__ == "__main__":
     app.run(debug=True)
