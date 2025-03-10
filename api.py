@@ -99,7 +99,11 @@ def getRates():
 
         # SQL query to fetch exchange rates within the date range
         getQuery = "SELECT * FROM exchange_rates WHERE rate_date >= %s AND rate_date <= %s"
-        cursor.execute(getQuery, (start_date, end_date))
+
+        if start_date <= end_date:
+            cursor.execute(getQuery, (start_date, end_date))
+        else :
+            cursor.execute(getQuery,(end_date,start_date))
 
         
         # Fetch all results
